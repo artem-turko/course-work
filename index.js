@@ -1,15 +1,15 @@
-const path = require('path');
-app.use(express.static(path.join(__dirname, 'public')));
-
 const express = require('express');
 const { Pool } = require('pg');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Створюємо пул зчитуючи з env (PGHOST, PGUSER, PGPASSWORD, PGDATABASE, PGPORT)
+// Підключення до PostgreSQL через змінні середовища
 const pool = new Pool();
 
+// Обслуговування статичних файлів (index.html, стилі, скрипти)
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 // Обробка неперехоплених помилок
@@ -18,26 +18,23 @@ process.on('unhandledRejection', err => {
   process.exit(1);
 });
 
+// Ініціалізація бази даних + запуск сервера
 (async () => {
   try {
-    // Підключення до БД та створення таблиці
-    const createTableQuery = `
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS todos (
         id SERIAL PRIMARY KEY,
         task TEXT NOT NULL,
         done BOOLEAN DEFAULT false
       );
-    `;
-    await pool.query(createTableQuery);
+    `);
     console.log('✅ PostgreSQL connected, table ready');
 
-    // Старт сервера
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server is running on port ${PORT}`);
     });
-
   } catch (err) {
-    console.error('❌ Failed to connect to DB or start server:', err.message);
+    console.error('❌ Failed to start app:', err.message);
     process.exit(1);
   }
 })();
