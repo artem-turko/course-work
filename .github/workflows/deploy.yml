@@ -1,0 +1,19 @@
+name: Deploy ToDo App (Local)
+
+on:
+  push:
+    branches:
+      - main  # заміни на master, якщо твоя основна гілка інша
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull latest image
+        run: docker pull ${{ secrets.DOCKER_USERNAME }}/todo-app:latest
+
+      - name: Restart container
+        run: |
+          docker compose down
+          docker compose up -d
