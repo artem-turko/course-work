@@ -48,6 +48,7 @@
     li {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       padding: 10px;
       border-bottom: 1px solid #ddd;
     }
@@ -57,6 +58,18 @@
     }
     input[type="checkbox"] {
       margin-right: 10px;
+    }
+    .left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .delete-btn {
+      background: none;
+      border: none;
+      color: red;
+      font-size: 18px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -86,24 +99,47 @@
       todos.forEach(todo => {
         const li = document.createElement('li');
         li.className = todo.done ? 'done' : '';
+
+        const leftDiv = document.createElement('div');
+        leftDiv.className = 'left';
+
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = todo.done;
-        checkbox.addEventListener('change', () => toggleDone(todo.id));
+        checkbox.addEventListener('change', () => toggleDone(todo));
+
         const span = document.createElement('span');
-        span.textContent = `${todo.task}`;
-        li.appendChild(checkbox);
-        li.appendChild(span);
+        span.textContent = todo.task;
+
+        leftDiv.appendChild(checkbox);
+        leftDiv.appendChild(span);
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '🗑️';
+        delBtn.className = 'delete-btn';
+        delBtn.addEventListener('click', () => deleteTodo(todo.id));
+
+        li.appendChild(leftDiv);
+        li.appendChild(delBtn);
         list.appendChild(li);
       });
     }
 
-    async function toggleDone(id) {
-      todos = todos.map(todo => {
-        if (todo.id === id) todo.done = !todo.done;
-        return todo;
+    async function toggleDone(todo) {
+      const updatedDone = !todo.done;
+      await fetch(`/api/todos/${todo.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ done: updatedDone })
       });
-      renderTodos(); // оновлюємо інтерфейс (зберігаємо в пам’яті, бо без БД)
+      todo.done = updatedDone;
+      renderTodos();
+    }
+
+    async function deleteTodo(id) {
+      await fetch(`/api/todos/${id}`, { method: 'DELETE' });
+      todos = todos.filter(t => t.id !== id);
+      renderTodos();
     }
 
     form.addEventListener('submit', async (e) => {
