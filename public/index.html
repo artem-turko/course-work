@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ToDo App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      flex-grow: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    li.done span {
+      text-decoration: line-through;
+      color: gray;
+    }
+    input[type="checkbox"] {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>ToDo List</h1>
+  <form id="todo-form">
+    <input type="text" id="task-input" placeholder="Нове завдання..." required />
+    <button type="submit">Додати</button>
+  </form>
+  <ul id="todo-list"></ul>
+
+  <script>
+    const form = document.getElementById('todo-form');
+    const input = document.getElementById('task-input');
+    const list = document.getElementById('todo-list');
+
+    let todos = [];
+
+    async function loadTodos() {
+      const res = await fetch('/api/todos');
+      todos = await res.json();
+      renderTodos();
+    }
+
+    function renderTodos() {
+      list.innerHTML = '';
+      todos.forEach(todo => {
+        const li = document.createElement('li');
+        li.className = todo.done ? 'done' : '';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = todo.done;
+        checkbox.addEventListener('change', () => toggleDone(todo.id));
+        const span = document.createElement('span');
+        span.textContent = `${todo.task}`;
+        li.appendChild(checkbox);
+        li.appendChild(span);
+        list.appendChild(li);
+      });
+    }
+
+    async function toggleDone(id) {
+      todos = todos.map(todo => {
+        if (todo.id === id) todo.done = !todo.done;
+        return todo;
+      });
+      renderTodos(); // оновлюємо інтерфейс (зберігаємо в пам’яті, бо без БД)
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const task = input.value.trim();
+      if (!task) return;
+      const res = await fetch('/api/todos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task })
+      });
+      const newTodo = await res.json();
+      todos.push(newTodo);
+      input.value = '';
+      renderTodos();
+    });
+
+    loadTodos();
+  </script>
+</body>
+</html>
