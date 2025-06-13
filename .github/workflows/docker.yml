@@ -27,4 +27,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/todo-app:latest
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/todo-app:latest
+            ${{ secrets.DOCKER_USERNAME }}/todo-app:${{ github.sha }}
+

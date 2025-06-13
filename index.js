@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 // Підключення до PostgreSQL через змінні середовища
 const pool = new Pool();
 
-// Обслуговування статичних файлів (index.html, стилі, скрипти)
+// Обслуговування статичних файлів (наприклад: public/index.html)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
