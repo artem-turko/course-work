@@ -14,7 +14,7 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   todo-app:
-    build: .
+    image: artemturko/todo-app:latest
     container_name: todo-app
     ports:
       - "3000:3000"
@@ -26,6 +26,7 @@ services:
       PGPASSWORD: todo_pass
       PGDATABASE: todos
       PGPORT: 5432
+
 
 volumes:
   pgdata:
