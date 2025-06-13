@@ -3,7 +3,7 @@ name: Deploy ToDo App (Local)
 on:
   push:
     branches:
-      - main  # заміни на master, якщо твоя основна гілка інша
+      - main  # або 'master', якщо твоя основна гілка інша
 
 jobs:
   deploy:
@@ -13,7 +13,7 @@ jobs:
       - name: Pull latest image
         run: docker pull ${{ secrets.DOCKER_USERNAME }}/todo-app:latest
 
-      - name: Restart container
+      - name: Restart container using docker-compose
         run: |
-          docker compose down
-          docker compose up -d
+          docker compose -f /home/turko/course-work/docker-compose.yml down
+          docker compose -f /home/turko/course-work/docker-compose.yml up -d
