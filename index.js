@@ -1,37 +1,34 @@
-const path = require('path');
 const express = require('express');
+const { Pool } = require('pg');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const pool = new Pool();
+
 app.use(express.json());
 
-// "База даних" в пам’яті
-let todos = [];
+// створення таблиці (один раз)
+pool.query(`
+  CREATE TABLE IF NOT EXISTS todos (
+    id SERIAL PRIMARY KEY,
+    task TEXT NOT NULL,
+    done BOOLEAN DEFAULT false
+  )
+`);
 
-// Отримати всі завдання
-app.get('/api/todos', (req, res) => {
-  res.json(todos);
+app.get('/api/todos', async (req, res) => {
+  const result = await pool.query('SELECT * FROM todos ORDER BY id');
+  res.json(result.rows);
 });
 
-// Додати нове завдання
-app.post('/api/todos', (req, res) => {
+app.post('/api/todos', async (req, res) => {
   const { task } = req.body;
-  if (!task) {
-    return res.status(400).json({ error: 'Task is required' });
-  }
+  if (!task) return res.status(400).json({ error: 'Task is required' });
 
-  const newTodo = {
-    id: todos.length + 1,
-    task,
-    done: false,
-  };
-
-  todos.push(newTodo);
-  res.status(201).json(newTodo);
-});
-
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.listen(PORT, () => {
-  console.log(`ToDo API running at http://localhost:${PORT}`);
+  const result = await pool.query(
+    'INSERT INTO todos (task) VALUES ($1) RETURNING *',
+    [task]
+  );
+  res.status(201).json(result.rows[0]);
 });

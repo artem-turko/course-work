@@ -1,7 +1,31 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_DB: todos
+      POSTGRES_USER: todo_user
+      POSTGRES_PASSWORD: todo_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   todo-app:
-    image: artemturko/todo-app:latest
+    build: .
+    container_name: todo-app
     ports:
       - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      PGHOST: db
+      PGUSER: todo_user
+      PGPASSWORD: todo_pass
+      PGDATABASE: todos
+      PGPORT: 5432
+
+volumes:
+  pgdata:
