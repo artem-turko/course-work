@@ -5,11 +5,9 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Статичні файли (HTML/CSS/JS)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// Підключення до PostgreSQL
 const pool = new Pool({
   host: process.env.PGHOST,
   user: process.env.PGUSER,
@@ -18,13 +16,11 @@ const pool = new Pool({
   port: process.env.PGPORT
 });
 
-// Обробка неперехоплених помилок
 process.on('unhandledRejection', err => {
-  console.error('💥 Unhandled rejection:', err.message);
+  console.error('Unhandled rejection:', err.message);
   process.exit(1);
 });
 
-// Ініціалізація: створення таблиці, запуск сервера
 (async () => {
   try {
     const createTableQuery = `
@@ -35,20 +31,17 @@ process.on('unhandledRejection', err => {
       );
     `;
     await pool.query(createTableQuery);
-    console.log('✅ PostgreSQL connected, table ready');
+    console.log('PostgreSQL connected, table ready');
 
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 Server is running on port ${PORT}`);
+      console.log(`Server is running on port ${PORT}`);
     });
   } catch (err) {
-    console.error('❌ Failed to connect to DB or start server:', err.message);
+    console.error('Failed to connect to DB or start server:', err.message);
     process.exit(1);
   }
 })();
 
-// ===== API =====
-
-// Отримати всі задачі
 app.get('/api/todos', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM todos ORDER BY id');
@@ -58,7 +51,6 @@ app.get('/api/todos', async (req, res) => {
   }
 });
 
-// Додати нову задачу
 app.post('/api/todos', async (req, res) => {
   const { task } = req.body;
   if (!task) return res.status(400).json({ error: 'Task is required' });
@@ -74,7 +66,6 @@ app.post('/api/todos', async (req, res) => {
   }
 });
 
-// Оновити статус (done)
 app.patch('/api/todos/:id', async (req, res) => {
   const { id } = req.params;
   const { done } = req.body;
@@ -89,7 +80,6 @@ app.patch('/api/todos/:id', async (req, res) => {
   }
 });
 
-// Видалити задачу
 app.delete('/api/todos/:id', async (req, res) => {
   const { id } = req.params;
   try {

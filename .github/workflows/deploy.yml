@@ -3,7 +3,7 @@ name: Deploy ToDo App (Local)
 on:
   push:
     branches:
-      - main  # або 'master', якщо твоя основна гілка інша
+      - main
 
 jobs:
   deploy:
